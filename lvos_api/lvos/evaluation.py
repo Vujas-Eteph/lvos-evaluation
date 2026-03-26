@@ -10,7 +10,7 @@ import numpy as np
 from .lvos_seperate import LVOS
 from .metrics import db_eval_boundary, db_eval_iou
 from . import utils
-from ..results import Results
+from .results import Results
 from scipy.optimize import linear_sum_assignment
 
 
