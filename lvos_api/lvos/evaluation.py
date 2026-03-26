@@ -7,10 +7,10 @@ import os
 warnings.filterwarnings("ignore", category=RuntimeWarning)
 
 import numpy as np
-from lvos.lvos_seperate import LVOS
-from lvos.metrics import db_eval_boundary, db_eval_iou
-from lvos import utils
-from lvos.results import Results
+from .lvos_seperate import LVOS
+from .metrics import db_eval_boundary, db_eval_iou
+from . import utils
+from ..results import Results
 from scipy.optimize import linear_sum_assignment
 
 

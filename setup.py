@@ -1,21 +1,19 @@
-from setuptools import setup
-import sys
+import numpy
+from setuptools import setup, Extension, find_packages
+from Cython.Build import cythonize
 
-if sys.version_info < (3, 6):
-    sys.exit('Sorry, only Python >= 3.6 is supported')
+# Point towards cython code
+extensions = [
+    Extension(
+        name="lvos_api.lvos.metric_ops._get_binary_c._get_binary_c",
+        sources=["lvos_api/lvos/metric_ops/_get_binary_c/_get_binary_c.pyx"],
+        include_dirs=[numpy.get_include()]
+    )
+]
 
+# Build the cython extension
 setup(
-    python_requires='>=3.6, <4',
-    install_requires=[
-        'Pillow>=4.1.1',
-        'networkx>=2.0',
-        'numpy>=1.12.1',
-        'opencv-python>=4.0.0.21',
-        'pandas>=0.21.1',
-        'pathlib2;python_version<"3.5"',
-        'scikit-image>=0.13.1',
-        'scikit-learn>=0.18',
-        'scipy>=1.0.0',
-        'tqdm>=4.28.1',
-        'cython',
-    ])
+    ext_modules = cythonize(extensions, compiler_directives={'language_level': "3"}),
+    packages=find_packages(),
+    package_data={"lvos_api": ["*.txt"]},
+)

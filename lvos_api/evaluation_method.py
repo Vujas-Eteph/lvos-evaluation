@@ -8,9 +8,9 @@ from time import time
 import numpy as np
 import pandas as pd
 
-from lvos.evaluation import LVOSEvaluation as LVOSEvaluation_SP
-from lvos.evaluation_mp import LVOSEvaluation as LVOSEvaluation_MP
-from lvos.evaluation_mt import LVOSEvaluation as LVOSEvaluation_MT
+from .lvos.evaluation import LVOSEvaluation_SP
+from .lvos.evaluation_mp import LVOSEvaluation_MP
+from .lvos.evaluation_mt import LVOSEvaluation_MT
 
 default_lvos_path = None
 
