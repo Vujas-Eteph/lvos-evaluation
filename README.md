@@ -1,3 +1,25 @@
+
+
+> [!WARNING]
+> To use it with the LVOSv1 dataset, need to move the correponding `meta_<split>.json` file into the directory split currently evaluated:
+> ```diff
+> datadir/LVOSv1/
+> - ├── <split>_meta.json
+> └── <split>
+>     ├── Annotations
+>     ├── JPEGImages
+> +   └── <split>_meta.json
+> ```
+
+> [!NOTE]
+> Run with:
+> ```fish
+> python -m lvos_api.evaluation_method --task semi-supervised --lvos_path <$path_data> --results_path <$path_expe> --mp_nums 16 --m_class mp --use_cache
+> ```
+> Manually delete cache dir afterward.
+
+---
+
 # LVOS evaluation package
 
 This package is used to evaluate long-term video object segmentation models for the <a href="https://lingyihongfd.github.io/lvos.github.io/" target="_blank">LVOS</a> dataset.
