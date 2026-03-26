@@ -36,7 +36,10 @@ class LVOSEvaluation(object):
         if codalab:
             self.unseen_videos = os.path.join(lvos_root, "unseen_videos.txt")
         else:
-            self.unseen_videos = "./unseen_videos.txt"
+            # package level path for the unseen_videos.txt
+            current_dir = os.path.dirname(__file__)
+            parent_dir = os.path.dirname(current_dir)
+            self.unseen_videos = os.path.join(parent_dir, "unseen_videos.txt")
 
         self.unseen_videos = open(self.unseen_videos, mode="r").readlines()
         for vi in range(len(self.unseen_videos)):
@@ -45,7 +48,10 @@ class LVOSEvaluation(object):
         if codalab:
             self.unsup_videos = os.path.join(lvos_root, "unsupervised_videos.txt")
         else:
-            self.unsup_videos = "./unsupervised_videos.txt"
+            # package level path for the unseen_videos.txt
+            current_dir = os.path.dirname(__file__)
+            parent_dir = os.path.dirname(current_dir)
+            self.unsup_videos = os.path.join(parent_dir, "unsupervised_videos.txt")
 
         self.unsup_videos = open(self.unsup_videos, mode="r").readlines()
         for vi in range(len(self.unsup_videos)):
