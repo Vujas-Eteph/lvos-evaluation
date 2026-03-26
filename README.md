@@ -1,3 +1,15 @@
+# Local Documentation
+
+Install with pixi
+```fish
+pixi add lvos-api --git https://github.com/Vujas-Eteph/lvos-evaluation
+```
+
+Run in `pixi shell`
+```fish
+python -m lvos_api.evaluation_method --task semi-supervised --lvos_path $path_data/<split> --results_path $path_expe/<split> --mp_nums 16 --m_class mp --use_cache
+```
+Manually delete cache dir afterward.
 
 
 > [!WARNING]
@@ -5,18 +17,13 @@
 > ```diff
 > datadir/LVOSv1/
 > - ├── <split>_meta.json
-> └── <split>
->     ├── Annotations
->     ├── JPEGImages
-> +   └── <split>_meta.json
+>   └── <split>
+>          ├── Annotations
+>          ├── JPEGImages
+> +        └── <split>_meta.json
 > ```
 
-> [!NOTE]
-> Run with:
-> ```fish
-> python -m lvos_api.evaluation_method --task semi-supervised --lvos_path <$path_data> --results_path <$path_expe> --mp_nums 16 --m_class mp --use_cache
-> ```
-> Manually delete cache dir afterward.
+
 
 ---
 
