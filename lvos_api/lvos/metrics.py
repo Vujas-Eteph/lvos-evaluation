@@ -61,6 +61,10 @@ def db_eval_iou(annotation, segmentation, void_pixels=None):
         j = 1 if np.isclose(union, 0) else j
     else:
         j[np.isclose(union, 0)] = 1
+    
+    if np.ndim(j) > 0:
+        j = j.item()
+
     return j
 
 
@@ -119,6 +123,10 @@ def db_eval_boundary(
         raise ValueError(
             f"db_eval_boundary does not support tensors with {annotation.ndim} dimensions"
         )
+
+    if np.ndim(f_res) > 0:
+        f_res = f_res.item()
+
     return f_res
 
 
