@@ -23,6 +23,24 @@ Manually delete cache dir afterward.
 > +        └── <split>_meta.json
 > ```
 
+> [!WARNING]
+> New output format looks like this:
+> ```diff
+> lvosv1_output/
+> └── valid
+>     ├── Annotations
+>     │   ├── 0tCWPOrc
+>     │   ├── 3nsHQkEK
+>     │   ├── ...
+> -   │   ├── global_results-valid.csv
+> -   │   ├── per-sequence_results-valid.csv
+> +   ├── eval_metrics
+> +   │   ├── 0tCWPOrc.parquet
+> +   │   ├── 3nsHQkEK.parquet
+> +   │   ├── ...
+> +   ├── global_results-valid.parquet
+> +   ├── per-sequence_results-valid.parquet
+> ```
 
 
 ---
