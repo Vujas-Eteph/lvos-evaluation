@@ -165,16 +165,19 @@ else:
 
     # Generate a dataframe for the per sequence results
     seq_names = list(J["M_per_object"].keys())
-    seq_measures = ["Sequence", "J-Mean", "F-Mean", "V-Mean"]
+    video_column = [elem.rsplit("_", 1)[0] for elem in seq_names]
+    object_id_column = [int(elem.rsplit("_", 1)[1]) for elem in seq_names]
+    seq_measures = ["sequence", "object_id", "J-Mean", "F-Mean", "V-Mean"]
     J_per_object = [J["M_per_object"][x] for x in seq_names]
     F_per_object = [F["M_per_object"][x] for x in seq_names]
     V_per_object = [V["M_per_object"][x] for x in seq_names]
 
     data_seq = list(zip(
-        seq_names, 
-        [J["M_per_object"][x] for x in seq_names],
-        [F["M_per_object"][x] for x in seq_names],
-        [V["M_per_object"][x] for x in seq_names]
+        video_column,
+        object_id_column,
+        J_per_object,
+        F_per_object,
+        V_per_object,
     ))
 
     table_seq = pl.DataFrame(data_seq, schema=seq_measures)

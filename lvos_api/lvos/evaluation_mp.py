@@ -384,7 +384,7 @@ class LVOSEvaluation(object):
                     VM = utils.db_statistics_var(
                         j_metrics_res[str(_obj)], f_metrics_res[str(_obj)]
                     )
-                    metrics_res["V"]["M"] = VM
+                    metrics_res["V"]["M"].append(VM)
                     metrics_res["V"]["M_per_object"][seq_name] = VM
 
                     if is_unseen:
