@@ -6,7 +6,7 @@ from ast import arg
 from time import time
 
 import numpy as np
-import pandas as pd
+import polars as pl
 
 from .lvos.evaluation import LVOSEvaluation as LVOSEvaluation_SP
 from .lvos.evaluation_mp import LVOSEvaluation as LVOSEvaluation_MP
@@ -74,16 +74,16 @@ else:
         print(f"Evaluating with multiple threads with {args.mp_nums} threads.")
 
 
-csv_name_global = f"global_results-{args.set}.csv"
-csv_name_per_sequence = f"per-sequence_results-{args.set}.csv"
+csv_name_global = f"global_results-{args.set}.parquet"
+csv_name_per_sequence = f"per-sequence_results-{args.set}.parquet"
 
 # Check if the method has been evaluated before, if so read the results, otherwise compute the results
 csv_name_global_path = os.path.join(args.results_path, csv_name_global)
 csv_name_per_sequence_path = os.path.join(args.results_path, csv_name_per_sequence)
 if os.path.exists(csv_name_global_path) and os.path.exists(csv_name_per_sequence_path):
     print("Using precomputed results...")
-    table_g = pd.read_csv(csv_name_global_path)
-    table_seq = pd.read_csv(csv_name_per_sequence_path)
+    table_g = pl.read_parquet(csv_name_global_path)
+    table_seq = pl.read_parquet(csv_name_per_sequence_path)
 else:
     print(f"Evaluating sequences for the {args.task} task...")
     # Create dataset and evaluate
@@ -158,10 +158,8 @@ else:
         raise NotImplementedError("Unknown task.")
 
     g_res = np.reshape(g_res, [1, len(g_res)])
-    table_g = pd.DataFrame(data=g_res, columns=g_measures)
-    with open(csv_name_global_path, "w") as f:
-        table_g.to_csv(f, index=False, float_format="%.3f")
-    print(f"Global results saved in {csv_name_global_path}")
+    table_g = pl.DataFrame(g_res, schema=g_measures)
+    table_g.write_parquet(csv_name_global_path)
 
     # Generate a dataframe for the per sequence results
     seq_names = list(J["M_per_object"].keys())
@@ -170,21 +168,25 @@ else:
     F_per_object = [F["M_per_object"][x] for x in seq_names]
     V_per_object = [V["M_per_object"][x] for x in seq_names]
 
-    table_seq = pd.DataFrame(
-        data=list(zip(seq_names, J_per_object, F_per_object, V_per_object)),
-        columns=seq_measures,
-    )
-    with open(csv_name_per_sequence_path, "w") as f:
-        table_seq.to_csv(f, index=False, float_format="%.3f")
-    print(f"Per-sequence results saved in {csv_name_per_sequence_path}")
+    data_seq = list(zip(
+        seq_names, 
+        [J["M_per_object"][x] for x in seq_names],
+        [F["M_per_object"][x] for x in seq_names],
+        [V["M_per_object"][x] for x in seq_names]
+    ))
 
-# Print the results
-sys.stdout.write(
-    f"--------------------------- Global results for {args.set} ---------------------------\n"
-)
-print(table_g.to_string(index=False))
-sys.stdout.write(f"\n---------- Per sequence results for {args.set} ----------\n")
-print(table_seq.to_string(index=False))
+    table_seq = pl.DataFrame(data_seq, schema=seq_measures)
+    table_seq.write_parquet(csv_name_per_sequence_path)
+
+
 total_time = time() - time_start
-sys.stdout.write("\nTotal time:" + str(total_time))
-sys.stdout.write("\n")
+# Print the results
+sys.stdout.write(f"-------------- Global results for {args.set} --------------\n")
+print(table_g)
+print(f"Global results in {csv_name_global_path}")
+
+sys.stdout.write(f"\n---------- Per sequence results for {args.set} ----------\n")
+print(table_seq)
+print(f"Per-sequence results in {csv_name_per_sequence_path}")
+
+sys.stdout.write(f"\nTotal time: {total_time}")
