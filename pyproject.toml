@@ -8,7 +8,7 @@ version = "0.1.0"
 description = "Stripped-down forked version of lvos-evaluation to install as package."
 readme = "README.md"
 requires-python = ">=3.6"
-dependencies = ["numpy", "Pillow", "tqdm", "opencv-python", "networkx", "pandas", "scikit-image", "scikit-learn", "scipy"]
+dependencies = ["numpy", "Pillow", "tqdm", "opencv-python", "networkx", "pandas", "scikit-image", "scikit-learn", "scipy", "polars"]
 
 [project.urls]
 "Homepage" = "https://github.com/LingyiHongfd/lvos-evaluation"
