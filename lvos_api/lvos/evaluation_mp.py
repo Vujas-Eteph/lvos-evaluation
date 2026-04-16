@@ -249,10 +249,6 @@ class LVOSEvaluation(object):
         for vi in range(len(self.unsup_videos)):
             self.unsup_videos[vi] = self.unsup_videos[vi].strip()
 
-    def update_pbar(self, result):
-        self.final_score.append[result[0], result[1], result[2]]
-        self.pbar.update()
-        print(result[0], result[1], result[2])
 
     def evaluate(self, res_path, metric=("J", "F", "V"), debug=False):
         metric = (
@@ -266,8 +262,8 @@ class LVOSEvaluation(object):
             raise ValueError("Metric possible values are J for IoU or F for Boundary")
 
         
-        raw_eval_nmetreics_loc = os.path.join(res_path, "eval_metrics")
-        os.makedirs(raw_eval_nmetreics_loc, exist_ok=True)
+        path_to_raw_eval_metrics = os.path.join(res_path.parent, "eval_metrics")
+        os.makedirs(path_to_raw_eval_metrics, exist_ok=True)
 
         # Containers
         metrics_res = {}
@@ -333,7 +329,7 @@ class LVOSEvaluation(object):
             # when sequence finished, save the raw results into a parquet file
             if seq_observations:
                 df_seq = pl.DataFrame(seq_observations)
-                df_seq.write_parquet(os.path.join(raw_eval_nmetreics_loc, f"{_seq_name}.parquet"))
+                df_seq.write_parquet(os.path.join(path_to_raw_eval_metrics, f"{_seq_name}.parquet"))
 
 
             # original code untouched

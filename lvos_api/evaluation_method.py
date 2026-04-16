@@ -11,6 +11,7 @@ import polars as pl
 from .lvos.evaluation import LVOSEvaluation as LVOSEvaluation_SP
 from .lvos.evaluation_mp import LVOSEvaluation as LVOSEvaluation_MP
 from .lvos.evaluation_mt import LVOSEvaluation as LVOSEvaluation_MT
+import pathlib
 
 default_lvos_path = None
 
@@ -78,8 +79,9 @@ csv_name_global = f"global_results-{args.set}.parquet"
 csv_name_per_sequence = f"per-sequence_results-{args.set}.parquet"
 
 # Check if the method has been evaluated before, if so read the results, otherwise compute the results
-csv_name_global_path = os.path.join(args.results_path, csv_name_global)
-csv_name_per_sequence_path = os.path.join(args.results_path, csv_name_per_sequence)
+results_path = pathlib.Path(args.results_path)
+csv_name_global_path = os.path.join(results_path.parent, csv_name_global)
+csv_name_per_sequence_path = os.path.join(results_path.parent, csv_name_per_sequence)
 if os.path.exists(csv_name_global_path) and os.path.exists(csv_name_per_sequence_path):
     print("Using precomputed results...")
     table_g = pl.read_parquet(csv_name_global_path)
@@ -104,7 +106,7 @@ else:
         )
 
     metrics_res, metrics_res_seen, metrics_res_unseen = dataset_eval.evaluate(
-        args.results_path
+        results_path
     )
     J, F, V = metrics_res["J"], metrics_res["F"], metrics_res["V"]
     J_seen, F_seen, V_seen = (
