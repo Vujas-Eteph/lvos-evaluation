@@ -10,6 +10,7 @@ import warnings
 from multiprocessing import Pool
 from tqdm import tqdm
 import os
+import polars as pl
 
 warnings.filterwarnings("ignore", category=RuntimeWarning)
 
@@ -248,10 +249,6 @@ class LVOSEvaluation(object):
         for vi in range(len(self.unsup_videos)):
             self.unsup_videos[vi] = self.unsup_videos[vi].strip()
 
-    def update_pbar(self, result):
-        self.final_score.append[result[0], result[1], result[2]]
-        self.pbar.update()
-        print(result[0], result[1], result[2])
 
     def evaluate(self, res_path, metric=("J", "F", "V"), debug=False):
         metric = (
@@ -263,6 +260,10 @@ class LVOSEvaluation(object):
             raise ValueError("Temporal metric not supported!")
         if "J" not in metric and "F" not in metric:
             raise ValueError("Metric possible values are J for IoU or F for Boundary")
+
+        
+        path_to_raw_eval_metrics = os.path.join(res_path.parent, "eval_metrics")
+        os.makedirs(path_to_raw_eval_metrics, exist_ok=True)
 
         # Containers
         metrics_res = {}
@@ -284,35 +285,54 @@ class LVOSEvaluation(object):
         # Sweep all sequences
         results = Results(root_dir=res_path)
         if self.task == "semi-supervised":
-            eval_sequeneces = list(self.dataset.get_sequences())
+            eval_sequences = list(self.dataset.get_sequences())
         elif self.task == "unsupervised_multiple":
-            eval_sequeneces = list(self.dataset.get_sequences())
+            eval_sequences = list(self.dataset.get_sequences())
         elif self.task == "unsupervised_single":
-            eval_sequeneces = list(self.unsup_videos)
+            eval_sequences = list(self.unsup_videos)
         else:
             raise NotImplementedError("Unknown task.")
 
         pool = Pool(self.mp_procs)
-        final_score = list(
-            tqdm(
-                pool.imap_unordered(
-                    _LVOSEvaluation(
-                        self.dataset,
-                        results,
-                        self.task,
-                        metric,
-                        use_cache=self.use_cache,
-                    ),
-                    eval_sequeneces,
+        results_gen = pool.imap_unordered(
+            _LVOSEvaluation(
+                self.dataset,
+                results,
+                self.task,
+                metric,
+                use_cache=self.use_cache,
                 ),
-                total=len(eval_sequeneces),
-                desc="Eval Long-Term VOS",
+                eval_sequences,
             )
-        )
-        pool.close()
-        pool.join()
+        
+        # execute the multiprocessing here and save the parquet files per sequence
+        for _seq_name, j_metrics_res, f_metrics_res in tqdm(
+            results_gen, total=len(eval_sequences), desc="Eval Long-Term VOS"):
 
-        for _seq_name, j_metrics_res, f_metrics_res in final_score:
+            seq_observations = []
+            objs = list(j_metrics_res.keys())
+
+            for _obj in objs:
+                j_vals = j_metrics_res[_obj].flatten()
+                f_vals = f_metrics_res[_obj].flatten()
+            
+                for frame_idx, (j_val, f_val) in enumerate(zip(j_vals, f_vals)):
+                    seq_observations.append({
+                        "sequence": _seq_name,
+                        "object_id": _obj,
+                        "frame_idx": frame_idx,
+                        "J": float(j_val),
+                        "F": float(f_val),
+                        "J&F": (float(j_val) + float(f_val)) / 2.0
+                    })
+
+            # when sequence finished, save the raw results into a parquet file
+            if seq_observations:
+                df_seq = pl.DataFrame(seq_observations)
+                df_seq.write_parquet(os.path.join(path_to_raw_eval_metrics, f"{_seq_name}.parquet"))
+
+
+            # original code untouched
             seq = self.dataset.get_sequence(_seq_name)
             objs = list(seq[_seq_name])
             is_unseen = False
@@ -375,5 +395,9 @@ class LVOSEvaluation(object):
                         metrics_res_seen["V"]["M"].append(VM)
 
                         metrics_res_seen["V"]["M_per_object"][seq_name] = VM
+
+
+        pool.close()
+        pool.join()
 
         return metrics_res, metrics_res_seen, metrics_res_unseen
